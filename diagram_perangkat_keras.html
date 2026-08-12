@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagram Perangkat Keras - Skripsi</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 40px; display: flex; flex-direction: column; align-items: center; }
+        .container { background-color: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 900px; }
+        h1 { color: #333; text-align: center; border-bottom: 2px solid #5e6ad2; padding-bottom: 15px; margin-bottom: 30px; }
+        .mermaid { display: flex; justify-content: center; margin-top: 20px; }
+        .description { margin-top: 30px; padding: 20px; background-color: #f8f9fa; border-left: 4px solid #5e6ad2; border-radius: 4px; line-height: 1.6; color: #555; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Diagram Arsitektur Perangkat Keras (Hardware)</h1>
+        
+        <div class="mermaid">
+            flowchart LR
+                A[Adaptor 5V / Power Bank] -->|Power 5V| B(NodeMCU ESP8266)
+                C[RFID Reader RC522] <-->|Komunikasi SPI| B
+                B -->|Digital Output| D[Buzzer]
+                B -->|Digital Output| E[LED Indikator]
+                B <-->|Koneksi WiFi| F((Internet / Router))
+                
+                classDef hardware fill:#e1f5fe,stroke:#039be5,stroke-width:2px;
+                classDef mcu fill:#fff3e0,stroke:#ff9800,stroke-width:2px;
+                classDef network fill:#e8f5e9,stroke:#4caf50,stroke-width:2px;
+                
+                class A,C,D,E hardware;
+                class B mcu;
+                class F network;
+        </div>
+
+        <div class="description">
+            <h3>Keterangan Diagram:</h3>
+            <ul>
+                <li><strong>NodeMCU ESP8266:</strong> Bertindak sebagai mikrokontroler utama yang mengendalikan seluruh sistem dan menghubungkan perangkat ke jaringan internet via WiFi.</li>
+                <li><strong>RFID Reader RC522:</strong> Modul sensor untuk membaca UID dari kartu RFID yang ditempelkan siswa, menggunakan protokol komunikasi SPI dengan NodeMCU.</li>
+                <li><strong>Buzzer & LED:</strong> Output aktuator yang memberikan feedback kepada pengguna (berbunyi atau menyala) saat kartu berhasil dibaca atau terjadi kesalahan.</li>
+                <li><strong>Router/Internet:</strong> Jalur komunikasi antara perangkat keras (NodeMCU) dengan database server (Firebase).</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        mermaid.initialize({ startOnLoad: true, theme: 'default' });
+    </script>
+</body>
+</html>

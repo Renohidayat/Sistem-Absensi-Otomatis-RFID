@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DFD Diagram - Skripsi</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 40px; display: flex; flex-direction: column; align-items: center; }
+        .container { background-color: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 900px; }
+        h1 { color: #333; text-align: center; border-bottom: 2px solid #5e6ad2; padding-bottom: 15px; margin-bottom: 30px; }
+        .mermaid { display: flex; justify-content: center; margin-top: 20px; }
+        .description { margin-top: 30px; padding: 20px; background-color: #f8f9fa; border-left: 4px solid #5e6ad2; border-radius: 4px; line-height: 1.6; color: #555; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Context Diagram (DFD Level 0)</h1>
+        
+        <div class="mermaid">
+            flowchart LR
+                Siswa((Siswa))
+                Admin((Admin Web))
+                
+                Sistem[Sistem Absensi Otomatis RFID]
+                
+                Siswa -->|1. Data UID Kartu| Sistem
+                Sistem -->|2. Notifikasi Suara / LED| Siswa
+                
+                Admin -->|3. Input Data Siswa & Pengaturan Jam| Sistem
+                Sistem -->|4. Laporan Data Absensi Realtime| Admin
+                
+                classDef systemBox fill:#bbdefb,stroke:#1976d2,stroke-width:3px;
+                class Sistem systemBox;
+        </div>
+
+        <div class="description">
+            <h3>Keterangan Context Diagram:</h3>
+            <p>Diagram Konteks (Data Flow Diagram Level 0) ini menunjukkan aliran data masuk (input) dan keluar (output) secara garis besar antara entitas luar (Siswa dan Admin) dengan sistem secara keseluruhan.</p>
+        </div>
+    </div>
+    
+    <script>
+        mermaid.initialize({ startOnLoad: true, theme: 'default' });
+    </script>
+</body>
+</html>

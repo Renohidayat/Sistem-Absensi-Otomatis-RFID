@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagram Perangkat Lunak - Skripsi</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 40px; display: flex; flex-direction: column; align-items: center; }
+        .container { background-color: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 900px; }
+        h1 { color: #333; text-align: center; border-bottom: 2px solid #5e6ad2; padding-bottom: 15px; margin-bottom: 30px; }
+        .mermaid { display: flex; justify-content: center; margin-top: 20px; }
+        .description { margin-top: 30px; padding: 20px; background-color: #f8f9fa; border-left: 4px solid #5e6ad2; border-radius: 4px; line-height: 1.6; color: #555; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Diagram Alir Perangkat Lunak (Software Flowchart)</h1>
+        
+        <div class="mermaid">
+            flowchart TD
+                A([Mulai Tapping Kartu RFID]) --> B[Baca UID Kartu oleh RC522]
+                B --> C{Apakah UID Berhasil Dibaca}
+                C -- Tidak --> B
+                C -- Ya --> D[Kirim UID ke NodeMCU ESP8266]
+                D --> E{Koneksi WiFi Terhubung}
+                E -- Tidak --> F[Nyalakan Indikator Error]
+                E -- Ya --> G[Kirim UID ke Database Firebase]
+                G --> H{Apakah UID Terdaftar}
+                H -- Tidak --> I[Buzzer Bunyi Panjang]
+                I --> A
+                H -- Ya --> J[Validasi Waktu Masuk dan Pulang]
+                J --> K[Simpan Data Absensi di Firebase]
+                K --> L[Buzzer Bunyi Pendek]
+                L --> M([Selesai Data Tampil di Web])
+                
+                classDef startEnd fill:#f3e5f5,stroke:#9c27b0,stroke-width:2px;
+                classDef process fill:#e3f2fd,stroke:#2196f3,stroke-width:2px;
+                classDef decision fill:#fff9c4,stroke:#fbc02d,stroke-width:2px;
+                
+                class A,M startEnd;
+                class B,D,F,G,I,J,K,L process;
+                class C,E,H decision;
+        </div>
+
+        <div class="description">
+            <h3>Keterangan Diagram:</h3>
+            <ul>
+                <li><strong>Proses Pembacaan:</strong> Sistem standby membaca kartu. Jika terbaca, MCU akan mengecek konektivitas sebelum memproses.</li>
+                <li><strong>Verifikasi:</strong> UID kartu dikirim ke Firebase untuk dicek apakah sudah diregistrasi. Jika belum, sistem menolak (Error).</li>
+                <li><strong>Pencatatan:</strong> Jika kartu dikenali, sistem memvalidasi waktu saat ini untuk menentukan apakah absensi masuk, terlambat, atau pulang, dan menyimpan log ke dalam sistem.</li>
+                <li><strong>Integrasi Web:</strong> Segera setelah database (Firebase) diperbarui, aplikasi web otomatis menampilkan data absensi terbaru secara realtime.</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        mermaid.initialize({ startOnLoad: true, theme: 'default' });
+    </script>
+</body>
+</html>

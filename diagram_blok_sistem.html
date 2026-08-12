@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagram Blok Sistem - Skripsi</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 40px; display: flex; flex-direction: column; align-items: center; }
+        .container { background-color: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 900px; }
+        h1 { color: #333; text-align: center; border-bottom: 2px solid #5e6ad2; padding-bottom: 15px; margin-bottom: 30px; }
+        .mermaid { display: flex; justify-content: center; margin-top: 20px; }
+        .description { margin-top: 30px; padding: 20px; background-color: #f8f9fa; border-left: 4px solid #5e6ad2; border-radius: 4px; line-height: 1.6; color: #555; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Diagram Blok Sistem (Perancangan Sistem)</h1>
+        
+        <div class="mermaid">
+            flowchart TD
+                subgraph Input [Blok Input]
+                    R[RFID Reader RC522]
+                end
+                
+                subgraph Proses [Blok Proses Mikrokontroler]
+                    N[NodeMCU ESP8266]
+                end
+                
+                subgraph Output [Blok Output]
+                    B[Buzzer]
+                    L[LED Indikator]
+                    W[Web Dashboard Admin]
+                end
+                
+                subgraph Penyimpanan [Blok Storage Cloud Server]
+                    F[(Firebase Realtime Database)]
+                end
+                
+                R -->|Data UID Kartu| N
+                N <-->|Request dan Response via WiFi| F
+                
+                N -->|Sinyal Digital High Low| B
+                N -->|Sinyal Digital High Low| L
+                
+                F -->|Sinkronisasi Web Socket| W
+        </div>
+
+        <div class="description">
+            <h3>Keterangan Diagram Blok:</h3>
+            <p>Diagram ini sangat penting dalam perancangan perangkat keras dan IoT. Menunjukkan klasifikasi komponen berdasarkan fungsinya:</p>
+            <ul>
+                <li><strong>Blok Input:</strong> Terdiri dari RFID Reader sebagai pemberi masukkan (input) berupa data UID kartu.</li>
+                <li><strong>Blok Proses:</strong> NodeMCU berfungsi sebagai otak yang memproses data UID dan mengendalikan modul lain.</li>
+                <li><strong>Blok Output:</strong> Buzzer, LED, dan Aplikasi Web adalah penampil informasi atau aktuator yang memberikan hasil (output).</li>
+                <li><strong>Blok Storage:</strong> Firebase bertugas menyimpan data secara permanen di cloud dan memfasilitasi komunikasi IoT.</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        mermaid.initialize({ startOnLoad: true, theme: 'default' });
+    </script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 import { AuthManager } from "./AuthManager.js?v=9";
 import { FirebaseService } from "./FirebaseService.js?v=9";
-import { UIManager } from "./UIManager.js?v=9";
+import { UIManager } from "./UIManager.js?v=2";
 
 const dbService = new FirebaseService();
 const auth = new AuthManager(dbService);

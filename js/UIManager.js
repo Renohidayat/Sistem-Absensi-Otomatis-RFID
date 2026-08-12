@@ -1621,14 +1621,12 @@ export class UIManager {
 
       return `
         <tr class="border-b border-[#e2e8f0] last:border-none hover:bg-[#ffffff] transition-colors">
-          <td class="py-2.5 font-bold uppercase text-white">${hari}</td>
+          <td class="py-2.5 font-bold uppercase text-black">${hari}</td>
           <td class="py-2.5">${statusBadge}</td>
           <td class="py-2.5 text-[#64748b]">${isAktif ? (d.masuk_buka || '-') : '-'}</td>
           <td class="py-2.5 text-orange-400 font-semibold">${isAktif ? (d.terlambat || '-') : '-'}</td>
           <td class="py-2.5 text-[#64748b]">${isAktif ? (d.masuk_tutup || '-') : '-'}</td>
-          <td class="py-2.5 text-[#2563eb] font-semibold">${isAktif ? (d.pulang_buka || '-') : '-'}</td>
-          <td class="py-2.5 text-[#64748b]">${isAktif ? (d.pulang_tutup || '-') : '-'}</td>
-        </tr>
+                            </tr>
       `;
     });
 

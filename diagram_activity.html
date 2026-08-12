@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity Diagram - Skripsi</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 40px; display: flex; flex-direction: column; align-items: center; }
+        .container { background-color: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 900px; }
+        h1 { color: #333; text-align: center; border-bottom: 2px solid #5e6ad2; padding-bottom: 15px; margin-bottom: 30px; }
+        .mermaid { display: flex; justify-content: center; margin-top: 20px; }
+        .description { margin-top: 30px; padding: 20px; background-color: #f8f9fa; border-left: 4px solid #5e6ad2; border-radius: 4px; line-height: 1.6; color: #555; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>UML: Activity Diagram (Proses Absensi)</h1>
+        
+        <div class="mermaid">
+            stateDiagram-v2
+                [*] --> Standby: Menunggu Kartu
+                
+                Standby --> BacaKartu: Tapping Kartu
+                BacaKartu --> PengecekanUID
+                
+                state PengecekanUID {
+                    [*] --> QueryDatabase
+                    QueryDatabase --> Valid: Terdaftar
+                    QueryDatabase --> TidakValid: Tidak Terdaftar
+                }
+                
+                PengecekanUID --> GagalAbsen: TidakValid
+                GagalAbsen --> IndikatorError: Buzzer Error
+                IndikatorError --> Standby
+                
+                PengecekanUID --> SuksesValidasi: Valid
+                SuksesValidasi --> CekWaktuJam
+                
+                state CekWaktuJam {
+                    [*] --> Masuk: Sebelum Batas Jam Masuk
+                    [*] --> Terlambat: Sesudah Batas Jam Masuk
+                    [*] --> Pulang: Sesudah Mulai Pulang
+                }
+                
+                CekWaktuJam --> SimpanDataAbsensi
+                SimpanDataAbsensi --> IndikatorSukses: Buzzer Sukses
+                IndikatorSukses --> [*]: Selesai
+        </div>
+
+        <div class="description">
+            <h3>Keterangan Activity Diagram:</h3>
+            <p>Diagram di atas mengilustrasikan alur kerja spesifik <strong>satu proses absensi</strong> dari sudut pandang aktivitas sistem:</p>
+            <ul>
+                <li>Sistem awalnya berada dalam state <strong>Standby</strong>.</li>
+                <li>Begitu terdapat kartu (RFID Tapping), sistem membaca UID dan memverifikasinya ke Database Firebase.</li>
+                <li>Jika gagal, perangkat memberikan respons Error lalu kembali standby.</li>
+                <li>Jika sukses, sistem akan memvalidasi waktu saat ini dengan parameter jam operasi yang telah ditentukan. Setelah itu data disimpan.</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        mermaid.initialize({ startOnLoad: true, theme: 'default' });
+    </script>
+</body>
+</html>
