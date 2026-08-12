@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Dashboard Absensi RFID - SMK PGRI 2 Sumedang</title>
+  <meta name="description" content="Sistem Absensi Siswa Berbasis RFID dan IoT - SMK PGRI 2 Sumedang">
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <link href="css/style.css?v=3" rel="stylesheet">
+</head>
+
+<body>
+  <!-- ===== MAIN DASHBOARD ===== -->
+  <div class="app-layout" id="mainDashboard">
+        <!-- Mobile Header & Overlay -->
+    <div class="mobile-header">
+      <div class="flex items-center gap-3">
+        <img alt="Logo" class="w-8 h-8 rounded-lg shadow-sm" src="assets/logo.png">
+        <span class="font-bold text-sm tracking-tight text-slate-800 uppercase">Sistem Absensi</span>
+      </div>
+      <button id="btnMobileMenu" class="p-2 -mr-2 flex items-center justify-center text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+        <span class="material-symbols-outlined text-2xl">menu</span>
+      </button>
+    </div>
+    <div id="mobileOverlay" class="mobile-overlay"></div>
+    
+    <!-- SIDEBAR -->
+    <aside id="mainSidebar">
+      <div class="p-6 border-b border-slate-200">
+        <div class="flex items-center gap-3 mb-6">
+          <img alt="SMK PGRI 2" class="w-10 h-10 rounded-lg shadow-sm" src="assets/logo.png">
+          <div>
+            <h2 class="text-sm font-bold tracking-tight text-slate-800 uppercase">Sistem Absensi</h2>
+            <p class="text-xs text-slate-500 font-medium">SMK PGRI 2 SUMEDANG</p>
+          </div>
+        </div>
+        <div class="admin-status bg-slate-50 border border-slate-200 rounded-lg p-3">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs uppercase tracking-wider text-slate-500" id="adminLabel">Mode: Pengunjung</span>
+            <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+          </div>
+          <button class="w-full text-left text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors"
+            id="btnAdminToggle">Login Admin</button>
+        </div>
+      </div>
+      <nav class="tabs" id="mainTabs">
+        <div class="tab-btn active" data-page="absensi">
+          <span class="material-symbols-outlined text-[20px]">fingerprint</span> Absensi
+        </div>
+        <div class="tab-btn" data-page="laporan">
+          <span class="material-symbols-outlined text-[20px]">description</span> Laporan & Export
+        </div>
+        <div class="tab-btn" data-page="statistik">
+          <span class="material-symbols-outlined text-[20px]">bar_chart</span> Statistik
+        </div>
+        <div class="tab-btn" data-page="jumlah-murid">
+          <span class="material-symbols-outlined text-[20px]">groups</span> Jumlah Siswa
+        </div>
+        <div class="mt-4 pt-4 border-t border-slate-200">
+          <div class="tab-btn" data-page="registrasi" data-protected="1">
+            <span class="material-symbols-outlined text-[20px]">person_add</span> Registrasi Siswa
+            <span class="lock-icon ml-auto text-[14px]">🔒</span>
+          </div>
+          <div class="tab-btn" data-page="tidak-dikenal" data-protected="1">
+            <span class="material-symbols-outlined text-[20px]">router</span> Kartu Tak Dikenal
+            <span class="lock-icon ml-auto text-[14px]">🔒</span>
+          </div>
+          <div class="tab-btn" data-page="kelola-admin" data-protected="1">
+            <span class="material-symbols-outlined text-[20px]">manage_accounts</span> Kelola Admin
+            <span class="lock-icon ml-auto text-[14px]">🔒</span>
+          </div>
+          <div class="tab-btn" data-page="pengaturan-jam">
+            <span class="material-symbols-outlined text-[20px]">schedule</span> Pengaturan Jam
+          </div>
+        </div>
+        <div class="mt-4 pt-4 border-t border-slate-200">
+          <a href="index.html" class="tab-btn" id="btnPortalSiswa" style="text-decoration:none;" style="background:linear-gradient(135deg,#eff6ff,#dbeafe);color:#2563eb;font-weight:600;border:1px solid #bfdbfe;">
+            <span class="material-symbols-outlined text-[20px]">school</span> Portal Siswa
+          </a>
+        </div>
+      </nav>
+    </aside>
+    <!-- MAIN CONTENT -->
+    <main>
+      <header class="mb-10">
+        <h1 class="text-3xl font-bold mb-2 text-slate-800">Dashboard Absensi RFID</h1>
+        <p class="text-slate-500 text-sm">Sistem Absensi Siswa Berbasis RFID dan IoT</p>
+      </header>
+      <!-- ============ PAGE: ABSENSI HARI INI ============ -->
+      <div class="page active fade-in" id="page-absensi">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <div class="stat-box">
+            <div class="stat-num" id="statTotal">0</div>
+            <div class="stat-label">Total Absen</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num text-blue-600" id="statHadir">0</div>
+            <div class="stat-label">Hadir</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num text-orange-500" id="statTerlambat">0</div>
+            <div class="stat-label">Terlambat</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num text-slate-500" id="statBelumHadir">0</div>
+            <div class="stat-label">Belum Hadir</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center gap-4">
+              <label class="text-xs font-semibold text-slate-500" for="tanggal">Pilih Tanggal</label>
+              <input id="tanggal" type="date">
+            </div>
+          </div>
+          <div class="h-[300px] mb-8">
+            <canvas id="chartAbsensiHariIni"></canvas>
+          </div>
+          <div class="subhead-style text-lg font-bold mb-4 text-slate-800">Data Absensi</div>
+          <div class="overflow-x-auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>Nama</th>
+                  <th>NISN</th>
+                  <th>UID Kartu</th>
+                  <th>Jam Masuk</th>
+                  <th>Jam Pulang</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="tabelAbsensi">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <!-- ============ PAGE: LAPORAN & EXPORT ============ -->
+      <div class="page" id="page-laporan">
+        <div class="card">
+          <div class="subhead-style text-lg font-bold mb-6 text-slate-800">Filter Rentang Tanggal</div>
+          <div class="grid grid-cols-1 md:grid-cols-6 gap-4 items-end mb-8">
+            <div class="flex flex-col gap-2">
+              <label class="text-xs text-slate-500" for="tglMulai">Dari</label>
+              <input class="w-full" id="tglMulai" type="date">
+            </div>
+            <div class="flex flex-col gap-2">
+              <label class="text-xs text-slate-500" for="tglAkhir">Sampai</label>
+              <input class="w-full" id="tglAkhir" type="date">
+            </div>
+                        <div class="flex flex-col gap-2">
+              <label class="text-xs text-slate-500" for="lapJurusan">Jurusan</label>
+              <select class="w-full" id="lapJurusan">
+                <option value="">Semua Jurusan</option>
+                <option value="PSPT">PSPT</option>
+                <option value="TKR">TKR/TKRO</option>
+                <option value="TSM">TSM/TBSM</option>
+                <option value="Lainnya">Lainnya</option>
+              </select>
+            </div>
+            <div class="flex flex-col gap-2">
+              <label class="text-xs text-slate-500" for="lapKelas">Kelas</label>
+              <select class="w-full" id="lapKelas">
+                <option value="">Semua Kelas</option>
+              </select>
+            </div>
+            <button class="btn btn-primary h-[38px]" id="btnTampilkanLaporan">Tampilkan</button>
+            <button class="btn btn-success h-[38px]" id="btnExportCSV">Export ke CSV</button>
+          </div>
+          <div class="grid grid-cols-3 gap-4 mb-8">
+            <div class="stat-box">
+              <div class="stat-num" id="lapTotal">0</div>
+              <div class="stat-label">Total Record</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-num text-blue-600" id="lapHadir">0</div>
+              <div class="stat-label">Hadir</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-num text-orange-500" id="lapTerlambat">0</div>
+              <div class="stat-label">Terlambat</div>
+            </div>
+          </div>
+          <div class="subhead-style text-lg font-bold mb-4 text-slate-800">Hasil</div>
+          <div class="overflow-x-auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>Tanggal</th>
+                  <th>Nama</th>
+                  <th>NISN</th>
+                  <th>Kelas</th>
+                    <th>Jurusan</th>
+                    <th>Angkatan</th>
+                  <th>Status</th>
+                  <th>Jam Masuk</th>
+                  <th>Jam Pulang</th>
+                </tr>
+              </thead>
+              <tbody id="tabelLaporan">
+                <tr>
+                  <td class="whitespace-nowrap text-center py-8 text-slate-500" colspan="9">Pilih rentang tanggal lalu klik Tampilkan</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <!-- ============ PAGE: STATISTIK ============ -->
+      <div class="page" id="page-statistik">
+        <div class="card">
+          <div class="subhead-style text-lg font-bold mb-6 text-slate-800">Statistik Kehadiran per Siswa</div>
+          <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end mb-8">
+            <div class="flex flex-col gap-2">
+              <label class="text-xs text-slate-500" for="statJurusan">Jurusan</label>
+              <select class="w-full sm:w-auto" id="statJurusan">
+                <option value="">-- Semua Jurusan --</option>
+                <option value="PSPT">PSPT</option>
+                <option value="TKR">TKR/TKRO</option>
+                <option value="TSM">TSM/TBSM</option>
+                <option value="Lainnya">Lainnya</option>
+              </select>
+            </div>
+            <div class="flex flex-col gap-2">
+              <label class="text-xs text-slate-500" for="statKelas">Kelas</label>
+              <select class="w-full sm:w-auto" id="statKelas">
+                <option value="">-- Semua Kelas --</option>
+              </select>
+            </div>
+            <div class="flex flex-col gap-2">
+              <label class="text-xs text-slate-500" for="statSiswa">Siswa</label>
+              <select class="w-full" id="statSiswa">
+                <option value="">-- Semua Siswa (Rekap) --</option>
+              </select>
+            </div>
+            <div class="flex flex-col gap-2">
+              <label class="text-xs text-slate-500" for="statBulan">Bulan</label>
+              <input class="w-full" id="statBulan" type="month">
+            </div>
+            <button class="btn btn-primary h-[38px]" id="btnTampilkanStatistik">Tampilkan</button>
+          </div>
+          <div class="text-center py-12 text-slate-500 border border-dashed border-slate-300 rounded-lg"
+            id="statistikKosong">
+            Pilih siswa dan bulan, lalu klik Tampilkan
+          </div>
+          <div id="statistikIsi" style="display:none">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+              <div class="stat-box">
+                <div class="stat-num" id="stHadir">0</div>
+                <div class="stat-label">Hadir</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-num" id="stTerlambat">0</div>
+                <div class="stat-label">Terlambat</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-num" id="stTidakHadir">0</div>
+                <div class="stat-label">Tidak Hadir</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-num text-blue-600" id="stPersenHadir">0%</div>
+                <div class="stat-label">Persentase Hadir</div>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+              <div class="lg:col-span-1 border border-slate-200 rounded-lg p-4 bg-white">
+                <canvas id="chartStatistikRingkasan"></canvas>
+              </div>
+              <div class="lg:col-span-2 border border-slate-200 rounded-lg p-4 bg-white">
+                <canvas id="chartStatistikHarian"></canvas>
+              </div>
+            </div>
+            <div class="subhead-style text-lg font-bold mb-4 text-slate-800">Detail Harian</div>
+            <div class="overflow-x-auto">
+              <table>
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>Tanggal</th>
+                    <th>Jam</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="tabelStatistikDetail"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card: Statistik Jumlah Murid & Kelas -->
+        <div class="card mt-6 border-0 shadow-sm bg-slate-50/50">
+          <div class="subhead-style text-lg font-bold mb-6 text-slate-800 flex items-center gap-2">
+            <span class="material-symbols-outlined text-blue-600">analytics</span>
+            Statistik Data Siswa &amp; Kelas
+          </div>
+          
+          <!-- Top Stats Row -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="flex items-center gap-4 bg-gradient-to-br from-blue-500 to-blue-700 p-5 rounded-xl shadow-md text-white hover:-translate-y-1 transition-transform">
+              <div class="p-3 bg-white/20 rounded-xl">
+                <span class="material-symbols-outlined text-3xl">groups</span>
+              </div>
+              <div>
+                <div class="text-3xl font-bold tracking-tight" id="statTotalMurid">0</div>
+                <div class="text-xs text-blue-100 font-medium uppercase tracking-wider mt-1">Total Siswa</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-4 bg-gradient-to-br from-indigo-500 to-indigo-700 p-5 rounded-xl shadow-md text-white hover:-translate-y-1 transition-transform">
+              <div class="p-3 bg-white/20 rounded-xl">
+                <span class="material-symbols-outlined text-3xl">meeting_room</span>
+              </div>
+              <div>
+                <div class="text-3xl font-bold tracking-tight" id="statTotalKelas">0</div>
+                <div class="text-xs text-indigo-100 font-medium uppercase tracking-wider mt-1">Total Kelas</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-4 bg-gradient-to-br from-emerald-500 to-emerald-700 p-5 rounded-xl shadow-md text-white hover:-translate-y-1 transition-transform">
+              <div class="p-3 bg-white/20 rounded-xl">
+                <span class="material-symbols-outlined text-3xl">school</span>
+              </div>
+              <div>
+                <div class="text-3xl font-bold tracking-tight" id="statTotalJurusan">0</div>
+                <div class="text-xs text-emerald-100 font-medium uppercase tracking-wider mt-1">Total Jurusan</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="md:col-span-1 flex flex-col gap-4">
+              <div class="overflow-x-auto border border-slate-200 rounded-xl p-5 bg-white shadow-sm h-full">
+                <div class="text-xs font-bold uppercase tracking-wider text-slate-800 mb-4 border-b border-slate-100 pb-3 flex justify-between items-center">
+                  <span>Distribusi Kelas</span>
+                  <span class="material-symbols-outlined text-slate-500 text-sm">pie_chart</span>
+                </div>
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr>
+                      <th class="whitespace-nowrap" class="whitespace-nowrap py-2 text-xs text-slate-500 uppercase font-bold tracking-wider">Kelas / Jurusan</th>
+                      <th class="whitespace-nowrap" class="whitespace-nowrap py-2 text-xs text-slate-500 uppercase font-bold tracking-wider text-right">Jumlah</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tabelKelasMurid">
+                    <tr>
+                      <td class="whitespace-nowrap" colspan="2" class="whitespace-nowrap text-center py-6 text-xs text-slate-500">Memuat data kelas...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="md:col-span-2 border border-slate-200 rounded-xl p-5 bg-white shadow-sm flex flex-col">
+              <div class="text-xs font-bold uppercase tracking-wider text-slate-800 mb-4 flex justify-between items-center">
+                <span>Grafik Distribusi Siswa per Kelas</span>
+                <span class="material-symbols-outlined text-slate-500 text-sm">bar_chart</span>
+              </div>
+              <div class="h-[250px] relative w-full flex-grow">
+                <canvas id="chartDistribusiMurid"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+            </div>
+      <!-- ============ PAGE: JUMLAH MURID ============ -->
+      <div class="page" id="page-jumlah-murid">
+        <div class="card">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+            <div>
+              <div class="subhead-style text-lg font-bold text-slate-800">Data &amp; Pengelompokan Siswa</div>
+              <p class="text-xs text-slate-500 mt-1">Lihat total siswa terdaftar, kelompokkan berdasarkan kelas atau angkatan.</p>
+            </div>
+            <div class="flex bg-slate-100 border border-slate-200 p-1 rounded-lg self-start">
+              <button class="whitespace-nowrap px-3 py-1.5 text-xs font-semibold rounded-md text-slate-800 bg-white border border-slate-200 shadow-sm transition-all cursor-pointer group-btn active" data-group-mode="semua">Semua</button>
+              <button class="whitespace-nowrap px-3 py-1.5 text-xs font-semibold rounded-md text-slate-500 hover:text-slate-800 transition-all cursor-pointer group-btn" data-group-mode="kelas">Kelas</button>
+              <button class="whitespace-nowrap px-3 py-1.5 text-xs font-semibold rounded-md text-slate-500 hover:text-slate-800 transition-all cursor-pointer group-btn" data-group-mode="jurusan">Jurusan</button>
+              <button class="whitespace-nowrap px-3 py-1.5 text-xs font-semibold rounded-md text-slate-500 hover:text-slate-800 transition-all cursor-pointer group-btn" data-group-mode="angkatan">Angkatan (Tahun)</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="stat-box bg-blue-50 border border-blue-100 p-4 rounded-lg flex items-center justify-between">
+              <div>
+                <div class="stat-num text-3xl font-bold text-blue-600" id="jmTotalMurid">0</div>
+                <div class="stat-label text-xs text-slate-500 mt-1">Total Siswa Terdaftar</div>
+              </div>
+              <span class="material-symbols-outlined text-[36px] text-blue-200">school</span>
+            </div>
+            <div class="stat-box bg-emerald-50 border border-emerald-100 p-4 rounded-lg flex items-center justify-between">
+              <div>
+                <div class="stat-num text-3xl font-bold text-emerald-500" id="jmTotalKelas">0</div>
+                <div class="stat-label text-xs text-slate-500 mt-1">Total Kelas</div>
+              </div>
+              <span class="material-symbols-outlined text-[36px] text-emerald-200">meeting_room</span>
+            </div>
+            <div class="stat-box bg-orange-50 border border-orange-100 p-4 rounded-lg flex items-center justify-between">
+              <div>
+                <div class="stat-num text-3xl font-bold text-orange-500" id="jmTotalAngkatan">0</div>
+                <div class="stat-label text-xs text-slate-500 mt-1">Total Angkatan</div>
+              </div>
+              <span class="material-symbols-outlined text-[36px] text-orange-200">calendar_today</span>
+            </div>
+          </div>
+            <div class="stat-box bg-purple-50 border border-purple-100 p-4 rounded-lg flex items-center justify-between">
+              <div>
+                <div class="stat-num text-3xl font-bold text-purple-500" id="jmTotalJurusan">0</div>
+                <div class="stat-label text-xs text-slate-500 mt-1">Total Jurusan</div>
+              </div>
+              <span class="material-symbols-outlined text-[36px] text-purple-200">category</span>
+            </div>
+
+          <div id="jumlahMuridContent">
+            <div class="text-center py-8 text-slate-500">Memuat data siswa...</div>
+          </div>
+        </div>
+      </div>
+      <!-- ============ PAGE: REGISTRASI SISWA ============ -->
+      <div class="page" id="page-registrasi">
+        <div class="card text-center py-12" id="registrasiLocked" style="display:none">
+          <div class="text-4xl mb-4">🔒</div>
+          <div class="subhead-style text-xl font-bold mb-2 text-slate-800">Halaman ini khusus Admin</div>
+          <p class="text-slate-500 mb-6">Silakan login sebagai admin untuk mengakses Registrasi Siswa.</p>
+          <button class="btn btn-primary btnLoginFromLocked">Login Admin</button>
+        </div>
+        <div id="registrasiContent" style="display:none">
+          <div class="card">
+            <div class="subhead-style text-lg font-bold mb-6 text-slate-800">Daftarkan Kartu RFID Baru</div>
+            <div class="p-3 mb-4 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm"
+              id="alertSuccess" style="display:none"></div>
+            <div class="p-3 mb-4 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm" id="alertError"
+              style="display:none"></div>
+            <div class="bg-blue-50 border border-blue-200 border-dashed rounded-lg p-8 text-center mb-8">
+              <p class="text-slate-500 text-sm mb-4">Tap kartu RFID pada reader untuk membaca UID otomatis</p>
+              <div class="text-2xl font-mono tracking-widest text-blue-600 mb-4" id="lastScannedUID">-</div>
+              <button class="btn btn-primary" id="btnGunakanUID">Gunakan UID ini</button>
+            </div>
+            <form class="grid grid-cols-1 md:grid-cols-2 gap-6" id="formRegistrasi">
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-semibold text-slate-500" for="regNama">Nama Siswa (Key Identitas)</label>
+                <input id="regNama" placeholder="Contoh: BUDI_SANTOSO" required="" type="text">
+              </div>
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-semibold text-slate-500" for="regNISN">NISN (Nomor Induk Siswa Nasional)</label>
+                <input id="regNISN" placeholder="Contoh: 0051234567" required="" type="text" pattern="[0-9]{10}" title="NISN harus 10 digit angka">
+              </div>
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-semibold text-slate-500" for="regKelas">Kelas</label>
+                <input id="regKelas" placeholder="Contoh: XII TKJ 1" required="" type="text">
+              </div>
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-semibold text-slate-500" for="regAngkatan">Tahun Angkatan</label>
+                <input id="regAngkatan" placeholder="Contoh: 2023" required="" type="number" min="2000" max="2050">
+              </div>
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-semibold text-slate-500" for="regJurusan">Jurusan</label>
+                <select id="regJurusan" required="" class="w-full text-sm py-2 px-3 border border-slate-300 rounded-lg bg-slate-50 text-slate-800">
+                  <option value="">-- Pilih Jurusan --</option>
+                  <option value="PSPT">PSPT</option>
+                  <option value="TKR">TKR/TKRO</option>
+                  <option value="TSM">TSM/TBSM</option>
+                  <option value="Lainnya">Lainnya</option>
+                </select>
+              </div>
+              <div class="flex flex-col gap-2 md:col-span-2">
+                <label class="text-xs font-semibold text-slate-500" for="regUID">UID Kartu RFID</label>
+                <input class="font-mono" id="regUID" placeholder="Contoh: 536AEA56" required="" type="text">
+              </div>
+              <div class="md:col-span-2">
+                <button class="btn btn-success w-full py-3" type="submit">Simpan Siswa</button>
+              </div>
+            </form>
+          </div>
+          <div class="card">
+            <div class="subhead-style text-lg font-bold mb-6 text-slate-800">Daftar Siswa Terdaftar</div>
+            <div class="mb-6">
+              <input class="w-full" id="searchSiswa" placeholder="Cari nama, kelas, atau UID..." type="text">
+            </div>
+            <div class="overflow-x-auto">
+              <table>
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>Nama</th>
+                    <th>NISN</th>
+                    <th>Kelas</th>
+                    <th>Jurusan</th>
+                    <th>Angkatan</th>
+                    <th>UID Kartu</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="tabelSiswa">
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- ============ PAGE: KARTU TIDAK DIKENAL ============ -->
+      <div class="page" id="page-tidak-dikenal">
+        <div class="card text-center py-12" id="tidakDikenalLocked" style="display:none">
+          <div class="text-4xl mb-4">🔒</div>
+          <div class="subhead-style text-xl font-bold mb-2 text-slate-800">Halaman ini khusus Admin</div>
+          <p class="text-slate-500 mb-6">Silakan login sebagai admin untuk mengakses halaman ini.</p>
+          <button class="btn btn-primary btnLoginFromLocked">Login Admin</button>
+        </div>
+        <div class="card" id="tidakDikenalContent" style="display:none">
+          <div class="subhead-style text-lg font-bold mb-2 text-slate-800">Riwayat Kartu Tidak Terdaftar</div>
+          <p class="text-xs text-slate-500 mb-6">
+            Daftar percobaan tap kartu yang UID-nya belum ada di data siswa.
+          </p>
+          <div class="overflow-x-auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>Tanggal</th>
+                  <th>Jam</th>
+                  <th>UID</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tabelTidakDikenal">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <!-- ============ PAGE: KELOLA ADMIN ============ -->
+      <div class="page" id="page-kelola-admin">
+        <div class="card text-center py-12" id="kelolaAdminLocked" style="display:none">
+          <div class="text-4xl mb-4">🔒</div>
+          <div class="subhead-style text-xl font-bold mb-2 text-slate-800">Halaman ini khusus Admin</div>
+          <p class="text-slate-500 mb-6">Silakan login sebagai admin untuk mengakses Kelola Admin.</p>
+          <button class="btn btn-primary btnLoginFromLocked">Login Admin</button>
+        </div>
+        <div id="kelolaAdminContent" style="display:none">
+          <div class="card">
+            <div class="subhead-style text-lg font-bold mb-6 text-slate-800">Tambah Admin Baru</div>
+            <div class="p-3 mb-4 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm"
+              id="alertAdminSuccess" style="display:none"></div>
+            <div class="p-3 mb-4 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm"
+              id="alertAdminError" style="display:none"></div>
+            <form class="flex gap-4" id="formTambahAdmin">
+              <div class="flex-1">
+                <input class="w-full" id="adminEmail" placeholder="Contoh: admin.baru@gmail.com" required=""
+                  type="email">
+              </div>
+              <button class="btn btn-success" type="submit">Tambah Admin</button>
+            </form>
+          </div>
+          <div class="card">
+            <div class="subhead-style text-lg font-bold mb-4 text-slate-800">Daftar Admin Terdaftar</div>
+            <div class="overflow-x-auto">
+              <table>
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>Email Admin</th>
+                    <th>Ditambahkan Oleh</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="tabelAdmin">
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- ============ PAGE: PENGATURAN JAM ============ -->
+      <div class="page" id="page-pengaturan-jam">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div class="flex flex-col md:flex-row md:items-center gap-3">
+            <div>
+              <h2 class="text-xl font-bold text-slate-800">Pengaturan Jam Sekolah</h2>
+              <p class="text-xs text-slate-500 mt-1">Atur parameter waktu masuk sekolah untuk operasional alat absensi RFID.</p>
+            </div>
+          </div>
+          <div class="text-right text-xs text-slate-500 font-semibold" id="pengaturanTerakhirUpdate">
+            Terakhir diperbarui: -
+          </div>
+        </div>
+
+        <div class="p-3 mb-6 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm"
+          id="alertPengaturanSuccess" style="display:none"></div>
+        <div class="p-3 mb-6 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm"
+          id="alertPengaturanError" style="display:none"></div>
+
+        <form id="formPengaturanJam">
+          <!-- DAY SELECTOR TABS -->
+          <div class="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-4">
+            <div class="flex flex-wrap gap-2" id="jadwalHariTabs">
+              <button type="button" class="whitespace-nowrap jadwal-hari-tab px-4 py-2 text-xs font-semibold rounded-lg bg-blue-600 text-white transition-all cursor-pointer flex items-center gap-2 active" data-hari="senin">
+                <span>Senin</span>
+                <span class="w-2 h-2 rounded-full bg-emerald-400" id="badge-senin"></span>
+              </button>
+              <button type="button" class="whitespace-nowrap jadwal-hari-tab px-4 py-2 text-xs font-semibold rounded-lg bg-white border border-slate-200 text-slate-500 hover:text-slate-800 hover:border-blue-400 transition-all cursor-pointer flex items-center gap-2" data-hari="selasa">
+                <span>Selasa</span>
+                <span class="w-2 h-2 rounded-full bg-emerald-400" id="badge-selasa"></span>
+              </button>
+              <button type="button" class="whitespace-nowrap jadwal-hari-tab px-4 py-2 text-xs font-semibold rounded-lg bg-white border border-slate-200 text-slate-500 hover:text-slate-800 hover:border-blue-400 transition-all cursor-pointer flex items-center gap-2" data-hari="rabu">
+                <span>Rabu</span>
+                <span class="w-2 h-2 rounded-full bg-emerald-400" id="badge-rabu"></span>
+              </button>
+              <button type="button" class="whitespace-nowrap jadwal-hari-tab px-4 py-2 text-xs font-semibold rounded-lg bg-white border border-slate-200 text-slate-500 hover:text-slate-800 hover:border-blue-400 transition-all cursor-pointer flex items-center gap-2" data-hari="kamis">
+                <span>Kamis</span>
+                <span class="w-2 h-2 rounded-full bg-emerald-400" id="badge-kamis"></span>
+              </button>
+              <button type="button" class="whitespace-nowrap jadwal-hari-tab px-4 py-2 text-xs font-semibold rounded-lg bg-white border border-slate-200 text-slate-500 hover:text-slate-800 hover:border-blue-400 transition-all cursor-pointer flex items-center gap-2" data-hari="jumat">
+                <span>Jumat</span>
+                <span class="w-2 h-2 rounded-full bg-emerald-400" id="badge-jumat"></span>
+              </button>
+              <button type="button" class="whitespace-nowrap jadwal-hari-tab px-4 py-2 text-xs font-semibold rounded-lg bg-white border border-slate-200 text-slate-500 hover:text-slate-800 hover:border-blue-400 transition-all cursor-pointer flex items-center gap-2" data-hari="sabtu">
+                <span>Sabtu</span>
+                <span class="w-2 h-2 rounded-full bg-zinc-400" id="badge-sabtu"></span>
+              </button>
+              <button type="button" class="whitespace-nowrap jadwal-hari-tab px-4 py-2 text-xs font-semibold rounded-lg bg-white border border-slate-200 text-slate-500 hover:text-slate-800 hover:border-blue-400 transition-all cursor-pointer flex items-center gap-2" data-hari="minggu">
+                <span>Minggu</span>
+                <span class="w-2 h-2 rounded-full bg-zinc-400" id="badge-minggu"></span>
+              </button>
+            </div>
+            <div class="flex items-center gap-2">
+              <button type="button" class="btn text-[11px] bg-white border border-slate-200 text-slate-500 hover:text-slate-800 hover:border-blue-400" id="btnSalinKeKerja">
+                Salin ke Senin–Jumat
+              </button>
+            </div>
+          </div>
+
+          <!-- ACTIVE DAY STATUS TOGGLE -->
+          <div class="card mb-6 flex items-center justify-between p-4 bg-slate-50">
+            <div>
+              <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2" id="labelHariTerpilih">
+                Jadwal Absensi Hari SENIN
+              </h3>
+              <p class="text-xs text-slate-500 mt-0.5" id="descHariTerpilih">Atur waktu masuk khusus untuk hari Senin.</p>
+            </div>
+            <label class="whitespace-nowrap flex items-center gap-3 text-xs font-semibold text-slate-700 cursor-pointer bg-white border border-slate-200 px-4 py-2 rounded-lg hover:border-blue-400">
+              <input type="checkbox" id="hariAktifToggle" checked class="rounded border-slate-300 bg-white text-blue-600 focus:ring-blue-500">
+              <span id="labelHariAktif">Hari Sekolah (Absensi Aktif)</span>
+            </label>
+          </div>
+
+          <!-- FORM TIME INPUTS FOR SELECTED DAY -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6" id="panelWaktuHari">
+            <!-- CARD 1: Pengaturan Jam Masuk -->
+            <div class="card mb-0 flex flex-col gap-6 h-full">
+              <div class="flex items-center gap-2 border-b border-slate-200 pb-3 mb-1">
+                <span class="material-symbols-outlined text-blue-600 text-[22px]">login</span>
+                <h3 class="text-sm font-bold uppercase tracking-wider text-slate-800">Jam Masuk Sekolah</h3>
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <div class="flex flex-col">
+                  <label class="text-xs font-semibold text-slate-700" for="inputJamMasukBuka">Jam Masuk Dibuka</label>
+                  <span class="text-xs text-slate-500 font-normal leading-normal">Siswa dapat mulai melakukan absensi masuk.</span>
+                </div>
+                <input id="inputJamMasukBuka" type="text" placeholder="06:00" maxlength="5"
+                  pattern="^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$" title="Format jam harus 24 jam (HH:MM), contoh: 06:30"
+                  required class="w-full">
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <div class="flex flex-col">
+                  <label class="text-xs font-semibold text-slate-700" for="inputJamMasukTerlambat">Batas Terlambat</label>
+                  <span class="text-xs text-slate-500 font-normal leading-normal">Setelah waktu ini status absensi menjadi Terlambat.</span>
+                </div>
+                <input id="inputJamMasukTerlambat" type="text" placeholder="07:00" maxlength="5"
+                  pattern="^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$" title="Format jam harus 24 jam (HH:MM), contoh: 07:00"
+                  required class="w-full">
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <div class="flex flex-col">
+                  <label class="text-xs font-semibold text-slate-700" for="inputJamMasukTutup">Jam Masuk Ditutup</label>
+                  <span class="text-xs text-slate-500 font-normal leading-normal">Setelah waktu ini absensi masuk ditutup.</span>
+                </div>
+                <input id="inputJamMasukTutup" type="text" placeholder="08:00" maxlength="5"
+                  pattern="^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$" title="Format jam harus 24 jam (HH:MM), contoh: 08:00"
+                  required class="w-full">
+              </div>
+            </div>
+
+
+            <!-- CARD 2: Pengaturan Jam Pulang -->
+            <div class="card mb-0 flex flex-col gap-6 h-full">
+              <div class="flex items-center gap-2 border-b border-slate-200 pb-3 mb-1">
+                <span class="material-symbols-outlined text-blue-600 text-[22px]">logout</span>
+                <h3 class="text-sm font-bold uppercase tracking-wider text-slate-800">Jam Pulang Sekolah</h3>
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <div class="flex flex-col">
+                  <label class="text-xs font-semibold text-slate-700" for="inputJamPulangBuka">Jam Pulang Dibuka</label>
+                  <span class="text-xs text-slate-500 font-normal leading-normal">Siswa dapat mulai melakukan absensi pulang.</span>
+                </div>
+                <input id="inputJamPulangBuka" type="text" placeholder="15:00" maxlength="5"
+                  pattern="^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$" title="Format jam harus 24 jam (HH:MM), contoh: 15:00"
+                  required class="w-full">
+              </div>
+              <div class="flex flex-col gap-1.5 mt-auto">
+                <div class="flex flex-col">
+                  <label class="text-xs font-semibold text-slate-700" for="inputJamPulangTutup">Jam Pulang Ditutup</label>
+                  <span class="text-xs text-slate-500 font-normal leading-normal">Setelah waktu ini absensi pulang ditutup.</span>
+                </div>
+                <input id="inputJamPulangTutup" type="text" placeholder="17:00" maxlength="5"
+                  pattern="^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$" title="Format jam harus 24 jam (HH:MM), contoh: 17:00"
+                  required class="w-full">
+              </div>
+            </div>
+          </div> <!-- Close panelWaktuHari -->
+            <div class="card mb-6">
+            <div class="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Ringkasan Jadwal Mingguan</h3>
+              <span class="text-xs text-slate-500">Semua Hari (Senin - Minggu)</span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr class="border-b border-slate-200 text-slate-500">
+                    <th class="whitespace-nowrap" class="py-2">Hari</th>
+                    <th class="whitespace-nowrap" class="py-2">Status</th>
+                    <th class="whitespace-nowrap" class="py-2">Masuk Dibuka</th>
+                    <th class="whitespace-nowrap" class="py-2">Batas Terlambat</th>
+                    <th class="whitespace-nowrap" class="py-2">Masuk Ditutup</th>
+                    
+                    
+                  </tr>
+                </thead>
+                <tbody id="tabelRingkasanJadwal"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- BUTTONS -->
+          <div class="flex gap-4 items-center justify-end" id="pengaturanJamAksi">
+            <button type="button"
+              class="btn bg-white border-slate-200 text-slate-500 hover:text-slate-800 hover:border-slate-400 font-medium"
+              id="btnResetPengaturan">Reset Form</button>
+            <button type="submit" class="btn btn-primary font-medium flex items-center gap-2 px-6"
+              id="btnSimpanPengaturan">
+              <span class="material-symbols-outlined text-[18px]">save</span>
+              Simpan Semua Jadwal
+            </button>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+  <!-- ===== Modal Login Admin ===== -->
+  <div class="modal-overlay fixed inset-0 z-50 hidden flex items-center justify-center p-4" id="modalLogin">
+    <div class="modal-box">
+      <h3 class="subhead-style text-xl font-bold mb-4 text-slate-800">Login Admin</h3>
+      <div class="p-3 mb-4 rounded-lg bg-red-50 border border-red-200 text-red-600 text-xs" id="loginError"
+        style="display:none"></div>
+      <p class="text-sm text-slate-500 mb-8">
+        Gunakan akun Google Anda yang terdaftar sebagai admin untuk masuk ke sistem.
+      </p>
+      <button
+        class="w-full bg-white text-slate-800 font-semibold rounded-lg py-3 flex items-center justify-center gap-3 hover:bg-slate-50 transition-colors mb-4 border border-slate-200 shadow-sm"
+        id="btnGoogleLogin">
+        <svg height="20" viewBox="0 0 18 18" width="20">
+          <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"></path>
+          <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"></path>
+          <path d="M3.964 10.712c-.18-.54-.282-1.117-.282-1.712s.102-1.173.282-1.712V4.956H.957C.347 6.173 0 7.549 0 9s.347 2.827.957 4.044l3.007-2.332z" fill="#FBBC05"></path>
+          <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.956l3.007 2.332c.708-2.127 2.692-3.708 5.036-3.708z" fill="#EA4335"></path>
+        </svg>
+        Login dengan Google
+      </button>
+      <button class="w-full text-sm font-medium text-slate-500 hover:text-slate-800" id="btnLoginCancel">Batal</button>
+    </div>
+  </div>
+  <!-- ===== Modal Edit Siswa ===== -->
+  <div class="modal-overlay fixed inset-0 z-50 hidden flex items-center justify-center p-4" id="modalEditSiswa">
+    <div class="modal-box max-w-lg">
+      <h3 class="subhead-style text-xl font-bold mb-6 text-slate-800">Edit Data Siswa</h3>
+      <div class="p-3 mb-4 rounded-lg bg-red-50 border border-red-200 text-red-600 text-xs" id="editError"
+        style="display:none"></div>
+      <div class="flex flex-col gap-6">
+        <div class="flex flex-col gap-2">
+          <label class="text-xs font-semibold text-slate-500">UID Kartu</label>
+          <input class="font-mono opacity-50" disabled="" id="editUID" type="text">
+        </div>
+        <div class="flex flex-col gap-2">
+          <label class="text-xs font-semibold text-slate-500" for="editNama">Nama Siswa</label>
+          <input id="editNama" type="text">
+        </div>
+        <div class="flex flex-col gap-2">
+          <label class="text-xs font-semibold text-slate-500" for="editNISN">NISN (Nomor Induk Siswa Nasional)</label>
+          <input id="editNISN" type="text" pattern="[0-9]{10}" title="NISN harus 10 digit angka">
+        </div>
+        <div class="flex flex-col gap-2">
+          <label class="text-xs font-semibold text-slate-500" for="editKelas">Kelas</label>
+          <input id="editKelas" type="text">
+        </div>
+        <div class="flex flex-col gap-2">
+          <label class="text-xs font-semibold text-slate-500" for="editAngkatan">Tahun Angkatan</label>
+          <input id="editAngkatan" type="number" min="2000" max="2050" required class="text-sm py-2 px-3 border border-slate-300 rounded-lg bg-slate-50 text-slate-800">
+        </div>
+        <div class="flex flex-col gap-2">
+          <label class="text-xs font-semibold text-slate-500" for="editJurusan">Jurusan</label>
+          <select id="editJurusan" class="w-full text-sm py-2 px-3 border border-slate-300 rounded-lg bg-slate-50 text-slate-800" required>
+            <option value="">-- Pilih Jurusan --</option>
+            <option value="PSPT">PSPT</option>
+            <option value="TKR">TKR/TKRO</option>
+            <option value="TSM">TSM/TBSM</option>
+            <option value="Lainnya">Lainnya</option>
+          </select>
+        </div>
+      </div>
+      <div class="flex gap-3 mt-8">
+        <button class="btn flex-1 bg-white border-slate-200 text-slate-500 hover:text-slate-800 hover:border-slate-400"
+          id="btnEditCancel">Batal</button>
+        <button class="btn btn-primary flex-1" id="btnEditSubmit">Simpan Perubahan</button>
+      </div>
+    </div>
+  </div>
+  <!-- SheetJS (Excel) -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Light theme chart defaults
+      Chart.defaults.color = '#64748b';
+      Chart.defaults.font.family = "'Inter', sans-serif";
+      Chart.defaults.plugins.tooltip.backgroundColor = '#1e293b';
+      Chart.defaults.plugins.tooltip.borderColor = '#334155';
+      Chart.defaults.plugins.tooltip.borderWidth = 1;
+      Chart.defaults.plugins.tooltip.titleColor = '#ffffff';
+      Chart.defaults.plugins.tooltip.bodyColor = '#e2e8f0';
+
+      // Tab Switching Logic with Animations
+      const tabs = document.querySelectorAll('.tab-btn');
+      const pages = document.querySelectorAll('.page');
+
+      async function switchTab(targetPageId) {
+        const activePage = document.querySelector('.page.active');
+        const targetPage = document.getElementById(`page-${targetPageId}`);
+
+        if (!targetPage || activePage === targetPage) return;
+
+        if (activePage) {
+          activePage.classList.remove('fade-in');
+          await new Promise(resolve => setTimeout(resolve, 400));
+          activePage.classList.remove('active');
+        }
+
+        targetPage.classList.add('active');
+        targetPage.offsetHeight;
+        targetPage.classList.add('fade-in');
+
+        tabs.forEach(btn => {
+          if (btn.dataset.page === targetPageId) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
+      }
+
+      tabs.forEach(tab => {
+        if (tab.dataset.page) {
+          tab.addEventListener('click', () => {
+            switchTab(tab.dataset.page);
+          });
+        }
+      });
+
+      window.navigateToPage = switchTab;
+
+      // Skeleton Loader Helper
+      window.showTableSkeleton = (tbodyId, cols, rows = 5) => {
+        const tbody = document.getElementById(tbodyId);
+        if (!tbody) return;
+
+        let skeletonHtml = '';
+        for (let i = 0; i < rows; i++) {
+          skeletonHtml += `
+            <tr>
+              ${Array(cols).fill(0).map(() => `
+                <td class="whitespace-nowrap" class="skeleton-cell">
+                  <div class="skeleton-line" style="width: ${Math.floor(Math.random() * (90 - 40 + 1) + 40)}%"></div>
+                </td>
+              `).join('')}
+            </tr>
+          `;
+        }
+        tbody.innerHTML = skeletonHtml;
+      };
+
+      window.showTableSkeleton('tabelAbsensi', 6);
+      window.showTableSkeleton('tabelSiswa', 6);
+      window.showTableSkeleton('tabelAdmin', 4);
+      window.showTableSkeleton('tabelTidakDikenal', 5);
+    });
+  </script>
+  <style>
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  </style>
+  <script src="js/app.js?v=15" type="module"></script>
+</body>
+
+</html>

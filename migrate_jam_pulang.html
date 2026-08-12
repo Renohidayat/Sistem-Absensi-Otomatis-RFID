@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Migrasi Database Absensi</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f8fafc; color: #1e293b; }
+    button { padding: 10px 20px; background: #2563eb; color: white; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; }
+    button:disabled { background: #94a3b8; cursor: not-allowed; }
+    #log { margin-top: 20px; padding: 15px; background: #1e293b; color: #10b981; font-family: monospace; white-space: pre-wrap; max-height: 400px; overflow-y: auto; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h2>Alat Migrasi Database Absensi (Jam Pulang Dummy)</h2>
+  <p>Alat ini akan membaca seluruh data absensi di Firebase Anda. Jika ada data siswa (Hadir/Terlambat) yang belum memiliki data jam pulang, sistem akan menyuntikkan data dummy <strong>16:00:00</strong> secara permanen langsung ke database.</p>
+  
+  <button id="btnStart">Mulai Migrasi Data</button>
+  <div id="log">Siap dijalankan...</div>
+
+  <script type="module">
+    import { ref, get, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { db } from "./js/config.js";
+
+    const btnStart = document.getElementById('btnStart');
+    const logEl = document.getElementById('log');
+
+    function log(msg) {
+      logEl.textContent += msg + '\n';
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    btnStart.addEventListener('click', async () => {
+      btnStart.disabled = true;
+      log("Memulai migrasi...");
+      
+      try {
+        const absensiRef = ref(db, '/absensi');
+        const snap = await get(absensiRef);
+        
+        if (!snap.exists()) {
+          log("Database /absensi kosong. Tidak ada yang perlu dimigrasi.");
+          return;
+        }
+
+        let updatedCount = 0;
+        let checkedCount = 0;
+        const updates = {};
+
+        snap.forEach(dateSnap => {
+          const tanggal = dateSnap.key;
+          dateSnap.forEach(uidSnap => {
+            checkedCount++;
+            const uid = uidSnap.key;
+            const data = uidSnap.val();
+            
+            const status = (data.status || '').toUpperCase();
+            const jamPulang = data.jam_pulang || data.waktu_pulang;
+
+            if (!jamPulang && (status === 'HADIR' || status === 'TERLAMBAT')) {
+              // Siapkan data untuk diupdate
+              updates[`/absensi/${tanggal}/${uid}/jam_pulang`] = "16:00 (Auto)";
+              updates[`/absensi/${tanggal}/${uid}/waktu_pulang`] = "16:00 (Auto)";
+              updatedCount++;
+            }
+          });
+        });
+
+        log(`Total data absensi diperiksa: ${checkedCount}`);
+        
+        if (updatedCount > 0) {
+          log(`Ditemukan ${updatedCount} data yang perlu disuntikkan jam pulang dummy. Menyimpan ke database...`);
+          await update(ref(db), updates);
+          log("BERHASIL! Seluruh data dummy jam pulang telah tersimpan di Firebase.");
+        } else {
+          log("Selesai. Semua data absensi yang valid sudah memiliki jam pulang. Tidak ada perubahan yang dilakukan.");
+        }
+      } catch (err) {
+        log("ERROR: " + err.message);
+      } finally {
+        btnStart.textContent = "Migrasi Selesai";
+      }
+    });
+  </script>
+</body>
+</html>
